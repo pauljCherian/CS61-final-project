@@ -25,7 +25,8 @@ CREATE TABLE Users (
 CREATE TABLE Exercises (
     ExerciseID   INT AUTO_INCREMENT PRIMARY KEY,
     ExerciseName VARCHAR(150) NOT NULL UNIQUE,
-    MuscleGroup  VARCHAR(100)
+    MuscleGroup  ENUM('Chest','Back','Shoulders','Biceps','Triceps','Forearms',
+                      'Quads','Hamstrings','Glutes','Calves','Core','Full Body')
 ) ;
 
 -- ---------------------------------------------------------------------------
@@ -34,7 +35,7 @@ CREATE TABLE Exercises (
 CREATE TABLE Workouts (
     WorkoutID   INT AUTO_INCREMENT PRIMARY KEY,
     UserID      INT NOT NULL,
-    WorkoutDate DATE NOT NULL,
+    WorkoutDate DATE NOT NULL DEFAULT (CURRENT_DATE),
     Description VARCHAR(255),
     Notes       TEXT,
     CreatedAt   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -57,6 +58,7 @@ CREATE TABLE WorkoutExercise (
         ON DELETE CASCADE,
     CONSTRAINT fk_we_exercise
         FOREIGN KEY (ExerciseID) REFERENCES Exercises(ExerciseID),
+    CONSTRAINT uq_we_workout_order UNIQUE (WorkoutID, OrderNum),
     INDEX idx_we_workout (WorkoutID),
     INDEX idx_we_exercise (ExerciseID)
 ) ;
@@ -75,6 +77,7 @@ CREATE TABLE WorkoutSets (
     CONSTRAINT fk_sets_we
         FOREIGN KEY (WorkoutExerciseID) REFERENCES WorkoutExercise(WorkoutExerciseID)
         ON DELETE CASCADE,
+    CONSTRAINT uq_sets_we_setnum UNIQUE (WorkoutExerciseID, SetNum),
     INDEX idx_sets_we (WorkoutExerciseID)
 ) ;
 
@@ -84,10 +87,12 @@ CREATE TABLE WorkoutSets (
 CREATE TABLE CardioSessions (
     CardioID        INT AUTO_INCREMENT PRIMARY KEY,
     WorkoutID       INT NOT NULL,
-    ActivityType    VARCHAR(100),
-    DurationMinutes INT          CHECK (DurationMinutes >= 0),
-    DistanceMeters  DECIMAL(10,2) CHECK (DistanceMeters >= 0),
-    Intensity       VARCHAR(50),
+    ActivityType    ENUM('Running','Walking','Cycling','Swimming','Rowing',
+                         'Elliptical','Stair Climber','Jump Rope','Hiking','HIIT','Other'),
+    Duration        INT          CHECK (Duration >= 0),    -- minutes
+    Distance        DECIMAL(10,2) CHECK (Distance >= 0),
+    Units           ENUM('mi','km','m'),                   -- unit for Distance
+    Intensity       ENUM('Low','Moderate','High'),
     AvgHeartRate    INT          CHECK (AvgHeartRate >= 0),
     Notes           TEXT,
     CONSTRAINT fk_cardio_workout
@@ -102,7 +107,7 @@ CREATE TABLE CardioSessions (
 CREATE TABLE Bodyweight (
     WeightID     INT AUTO_INCREMENT PRIMARY KEY,
     UserID       INT NOT NULL,
-    RecordedDate DATE NOT NULL,
+    RecordedDate DATE NOT NULL DEFAULT (CURRENT_DATE),
     Weight       DECIMAL(6,2) CHECK (Weight >= 0),
     Unit         ENUM('kg','lb') NOT NULL DEFAULT 'lb',
     CONSTRAINT fk_bw_user
@@ -117,8 +122,8 @@ CREATE TABLE Bodyweight (
 CREATE TABLE Sleep (
     SleepID         INT AUTO_INCREMENT PRIMARY KEY,
     UserID          INT NOT NULL,
-    SleepDate       DATE NOT NULL,
-    DurationMinutes INT CHECK (DurationMinutes >= 0),
+    SleepDate       DATE NOT NULL DEFAULT (CURRENT_DATE),
+    Duration        INT CHECK (Duration >= 0),    -- minutes
     CONSTRAINT fk_sleep_user
         FOREIGN KEY (UserID) REFERENCES Users(UserID)
         ON DELETE CASCADE,
@@ -133,6 +138,7 @@ CREATE TABLE Supplements (
     UserID         INT NOT NULL,
     SupplementName VARCHAR(150) NOT NULL,
     Dosage         VARCHAR(100),
+    Units          ENUM('g','mg','mcg','mL','IU','capsule','tablet','scoop') NOT NULL DEFAULT 'g',
     ValidFrom      DATE NOT NULL,
     ValidTo        DATE,
     CONSTRAINT fk_supp_user
