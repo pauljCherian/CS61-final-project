@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Workout</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <main class="container">
+        <h1>Workout</h1>
+
+        <form method="POST" action="/submit-workout">
+
+            <div id="lifts"></div>
+
+            <button type="button" onclick="addLift()">Add Lift</button>
+
+            <hr>
+
+            <h2>Cardio</h2>
+
+            <div id="cardio-sessions"></div>
+
+            <button type="button" onclick="addCardio()">Add Cardio</button>
+
+            <hr>
+
+            <button type="submit">Save Workout</button>
+        </form>
+    </main>
+
+    <template id="lift-template">
+        <div class="lift">
+            <h2>Lift</h2>
+
+            <div class="lift-header">
+                <input name="lift_name" placeholder="exercise name">
+                <input name="lift_notes" placeholder="notes (optional)">
+            </div>
+
+            <div class="sets">
+                <div class="set">
+                    <input name="weight" placeholder="weight">
+                    <input name="reps" placeholder="reps">
+                    <input name="rpe" placeholder="rpe">
+                </div>
+            </div>
+
+            <button type="button" onclick="addSet(this)">Add Set</button>
+            <button type="button">Save Sets</button>
+
+            <hr>
+        </div>
+    </template>
+
+    <template id="set-template">
+        <div class="set">
+            <input name="weight" placeholder="weight">
+            <input name="reps" placeholder="reps">
+            <input name="rpe" placeholder="rpe">
+        </div>
+    </template>
+
+    <template id="cardio-template">
+        <div class="cardio">
+            <div class="cardio-header">
+                <input name="cardio_type" placeholder="cardio type">
+                <input name="cardio_notes" placeholder="notes (e.g. 4x400m)">
+            </div>
+
+            <div class="cardio-stats">
+                <input name="cardio_time" placeholder="time">
+                <input name="cardio_distance" placeholder="distance">
+                <label>Unit
+                    <select name="cardio_unit">
+                        <option value="miles">miles</option>
+                        <option value="meters">meters</option>
+                        <option value="yards">yards</option>
+                    </select>
+                </label>
+                <label>Intensity
+                    <select name="cardio_intensity">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                    </select>
+                </label>
+            </div>
+
+            <button type="button">Save Cardio</button>
+
+            <hr>
+        </div>
+    </template>
+
+    <script>
+        function addLift() {
+            const template = document.getElementById("lift-template");
+            const copy = template.content.cloneNode(true);
+            document.getElementById("lifts").appendChild(copy);
+        }
+
+        function addSet(button) {
+            const lift = button.parentElement;
+            const sets = lift.querySelector(".sets");
+
+            const template = document.getElementById("set-template");
+            const copy = template.content.cloneNode(true);
+
+            sets.appendChild(copy);
+        }
+
+        function addCardio() {
+            const template = document.getElementById("cardio-template");
+            const copy = template.content.cloneNode(true);
+            document.getElementById("cardio-sessions").appendChild(copy);
+        }
+    </script>
+</body>
+</html>

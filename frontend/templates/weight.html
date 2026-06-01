@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Log Weight</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <main class="container">
+        <h1>Log Weight</h1>
+
+        <form method="POST" action="/submit-weight">
+            <div class="field-row">
+                <input type="date" name="date">
+                <input name="weight" placeholder="weight">
+                <select name="weight_unit">
+                    <option value="lbs">lbs</option>
+                    <option value="kg">kg</option>
+                </select>
+            </div>
+
+            <br>
+
+            <button type="submit">Save Weight</button>
+        </form>
+    </main>
+</body>
+</html>
