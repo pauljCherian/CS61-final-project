@@ -13,7 +13,7 @@ token = None
 # Written by Claude Code Opus 4.8 - was not sure how to gate pages
 @app.before_request
 def require_login():
-    allowed = {"login", "login_page", "static"}
+    allowed = {"login", "login_page", "signup", "static"}
     if request.endpoint not in allowed and not token:
         return redirect(url_for("login_page"))
 
@@ -21,7 +21,7 @@ def require_login():
 # ----- pages -----
 
 @app.route('/')
-def hello():
+def home():
     return render_template("index.html")
 
 @app.route('/workout')
@@ -58,6 +58,22 @@ def login():
 
     if response.status_code == 200:
         token = response.json()["token"]
-        return redirect(url_for("hello"))
+        return redirect(url_for("home"))
 
     return render_template("login.html", error="Login failed. Check your username and password.")
+
+@app.route('/signup', methods=["POST"])
+def signup():
+    app.logger.debug("signing up")
+    username = request.form.get("username")
+    password = request.form.get("password")
+    email = request.form.get("email")
+
+    data = {"Email": email, "Username": username, "Password": password}
+
+    response = requests.post(API_URL + "/api/register", json=data)
+
+    if response.status_code == 201:
+        return redirect(url_for("login"))
+
+    return render_template("login.html", error="Signup failed. Retry.")

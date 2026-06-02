@@ -1,0 +1,8 @@
+{
+	"localhost": {
+		"user":"api_user",
+		"password":"",
+		"host":"localhost",
+		"database":"workout_tracker"
+	}
+}

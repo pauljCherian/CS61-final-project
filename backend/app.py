@@ -12,6 +12,7 @@ from routes.workout_exercises import workout_exercises_bp
 from routes.workouts import workouts_bp
 
 app = Flask(__name__)
+# TODO remove
 app.config['SECRET_KEY'] = "YOUR_SUPER_SECRET_KEY"
 
 # Register the blueprints with the main app
