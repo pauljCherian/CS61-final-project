@@ -42,7 +42,11 @@ def get_workout_exercises(current_user_id, current_user_is_admin, workout_id):
         if len(rows) == 0:
             return jsonify({"error": f"Invalid workout ID for this user: {workout_id}"}), 404
 
-        query = "SELECT * FROM WorkoutExercise WHERE WorkoutID = %s"
+        # Join Exercises to return the exercise name with each row, for readability.
+        query = ("SELECT we.*, e.ExerciseName "
+            "FROM WorkoutExercise we "
+            "JOIN Exercises e ON e.ExerciseID = we.ExerciseID "
+            "WHERE we.WorkoutID = %s ORDER BY we.OrderNum")
         values = (workout_id,)
         cursor.execute(query, values)
         rows = cursor.fetchall()

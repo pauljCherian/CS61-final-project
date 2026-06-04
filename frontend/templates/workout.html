@@ -8,7 +8,34 @@
         <main class="container" data-workout-id="{{ workout_id }}">
         <h1>Workout</h1>
 
-        <div id="lifts"></div>
+        <div id="lifts">
+            {% for lift in lifts %}
+            <div class="lift" data-we-id="{{ lift.WorkoutExerciseID }}">
+                <h2>Lift</h2>
+
+                <div class="lift-header">
+                    <input name="lift_name" placeholder="exercise name" value="{{ lift.ExerciseName }}" onblur="saveLift(this)">
+                    <input name="lift_notes" placeholder="notes (optional)" value="{{ lift.Notes or '' }}" onblur="saveLift(this)">
+                    <button type="button" onclick="deleteLift(this)">Delete Lift</button>
+                </div>
+
+                <div class="sets">
+                    {% for s in lift.sets %}
+                    <div class="set" data-set-id="{{ s.SetID }}">
+                        <input name="weight" placeholder="weight" value="{{ s.Weight or '' }}" onblur="saveSet(this)">
+                        <input name="reps" placeholder="reps" value="{{ s.Reps or '' }}" onblur="saveSet(this)">
+                        <input name="rpe" placeholder="rpe" value="{{ s.RPE or '' }}" onblur="saveSet(this)">
+                        <button type="button" onclick="deleteSet(this)">x</button>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <button type="button" class="add-set" onclick="addSet(this)">Add Set</button>
+
+                <hr>
+            </div>
+            {% endfor %}
+        </div>
         <button type="button" onclick="addLift()">Add Lift</button>
 
         <hr>
