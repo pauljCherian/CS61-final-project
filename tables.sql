@@ -87,13 +87,11 @@ CREATE TABLE WorkoutSets (
 CREATE TABLE CardioSessions (
     CardioID        INT AUTO_INCREMENT PRIMARY KEY,
     WorkoutID       INT NOT NULL,
-    ActivityType    ENUM('Running','Walking','Cycling','Swimming','Rowing',
-                         'Elliptical','Stair Climber','Jump Rope','Hiking','HIIT','Other'),
-    Duration        INT          CHECK (Duration >= 0),    -- minutes
+    ActivityType    VARCHAR(150),
+    Duration        INT          CHECK (Duration >= 0),    -- seconds
     Distance        DECIMAL(10,2) CHECK (Distance >= 0),
     Units           ENUM('mi','km','m'),                   -- unit for Distance
-    Intensity       ENUM('Low','Moderate','High'),
-    AvgHeartRate    INT          CHECK (AvgHeartRate >= 0),
+    Intensity       TINYINT      CHECK (Intensity >= 1 AND Intensity <= 5),
     Notes           TEXT,
     CONSTRAINT fk_cardio_workout
         FOREIGN KEY (WorkoutID) REFERENCES Workouts(WorkoutID)

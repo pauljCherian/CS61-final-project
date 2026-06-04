@@ -22,12 +22,18 @@ h1 {
 
 .button {
     display: block;
+    width: 100%;
+    box-sizing: border-box;
     padding: 18px;
     background: black;
     color: white;
+    border: none;
     text-decoration: none;
     border-radius: 8px;
     font-size: 18px;
+    font-family: inherit;
+    margin: 0;
+    cursor: pointer;
 }
 
 .button:hover {
@@ -57,4 +63,52 @@ button {
     justify-content: center;
     gap: 8px;
     margin: 8px 0;
+}
+
+.home-btn {
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    background: black;
+    color: white;
+    text-decoration: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.home-btn:hover {
+    background: #333;
+}
+
+.clock {
+    position: fixed;
+    top: 12px;
+    right: 12px;
+    font-size: 14px;
+    color: #333;
+}
+
+.workouts-table {
+    margin: 0 auto;
+    border-collapse: collapse;
+    font-size: 13px;
+    text-align: left;
+}
+
+.workouts-table th,
+.workouts-table td {
+    padding: 6px 12px;
+    border-bottom: 1px solid #ccc;
+}
+
+.workouts-table form {
+    display: inline;
+    margin: 0;
+}
+
+.workouts-table button {
+    font-size: 13px;
+    padding: 2px 8px;
+    margin: 0;
 }

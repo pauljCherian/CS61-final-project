@@ -1,0 +1,43 @@
+workout_id,id,movement,distance,unit,time,type,intensity,watts,notes
+2,1,run,4.16,miles,0:39:18,steady,zone 2,,just light
+3,2,row,5033,meters,0:26:53,technique,zone 2,,technique work
+4,3,row,5028,meters,0:25:31,technique,zone 2,,
+14,4,assault bike,3.26,miles,0:10:21,steady,zone 2,,
+14,5,row,6034,meters,0:32:09,steady,zone 2,,
+14,6,bike,8926,meters,0:20:37,steady,zone 2,132,
+19,7,run,2.4,miles,0:21:32,steady,zone 2,,with sydney to the marina!
+21,8,row,6100,meters,0:32:00,steady,zone 2,,
+21,9,bike,13768,meters,0:30:27,steady,zone 2,150,
+24,10,row,6023,meters,0:30:53,steady,zone 2,,split up 15 mins w/ DUs between
+24,11,bike,13633,meters,0:30:18,steady,zone 2,148,
+33,12,row,10024,meters,0:49:10,steady,zone 2,,maybe pumped it a little too hard but
+33,13,bike,14024,meters,0:30:00,steady,zone 2,155,
+37,14,ski,2000,meters,0:10:00,steady,zone 2,,
+37,15,bike,17000,meters,0:43:00,steady,zone 2,145,tried to no sweat it
+39,16,run,6.55,miles,1:01:00,steady,zone 2,,
+41,17,run,4.28,miles,0:38:22,tempo,zone 3,,"2 miles, 1 quick one at 8 min, then cool down all kinda high hr"
+49,18,row,7750,meters,0:40:30,steady,zone 2,,pretty chill. kept like 2:35 and just coasted.
+51,19,row,10153,meters,0:50:10,steady,zone 2,,
+58,20,ski,2074,meters,0:10:00,steady,zone 2,,
+58,21,row,4181,meters,0:20:00,steady,zone 2,,
+58,22,bike,13.1,miles,0:31:06,steady,zone 2,,
+59,23,row,4300,meters,0:20:14,steady,zone 2,,
+61,24,bike,16.5,miles,0:46:05,steady,zone 2,,
+101,25,run,1.03,miles,0:06:34,hard,zone 4,,
+102,26,run,4.7,miles,0:46:32,,zone 2,,
+104,27,run,8.04,miles,1:17:00,,zone 2,,
+106,28,bike,10,miles,0:45:00,,zone 2,,
+116,29,row,1000,meters,1:40 - > 1:38,hard,zone 4,,2 500m efforts at 90% w/ 5 min break
+114,30,run,4.52,miles,0:44:53,easy,zone 2,,
+119,31,run,3.11,miles,0:25:03,mid,zone 3,,
+122,32,run,5.56,miles,0:50:29,,zone 2,,
+131,33,run,4.15,miles,0:40:58,,zone 2,,
+127,34,row,500,meters,0:01:34,hard,zone 4,,
+134,35,row,5000,meters,0:24:00,,zone 3,,
+135,36,run,6.25,miles,1:01:00,,zone 2,,
+137,37,run,8.06,miles,1:23:00,,zone 2,,
+138,38,run,4.17,miles,0:36:42,,zone 2,,
+139,39,run,15.6,miles,2:18:00,,zone 2,,
+141,40,run,3.79,miles,0:34:49,,zone 2,,
+144,41,run,2.98,miles,0:24:34,,zone 3,,
+145,42,run,6.28,miles,1:00:00,,zone 2,,

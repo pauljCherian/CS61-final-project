@@ -5,19 +5,40 @@
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
+    <a class="home-btn" href="/">Home</a>
     <main class="container">
         <h1>Log Sleep</h1>
 
         <form method="POST" action="/submit-sleep">
             <div class="field-row">
-                <input type="date" name="date">
-                <input type="time" name="sleep_time">
+                <input type="date" name="date" onchange="loadSleep(this.value)">
+                <input name="sleep_time" id="sleep_time" placeholder="hours:minutes (e.g. 8:30)">
             </div>
+
+            <input type="hidden" name="sleep_id" id="sleep_id">
 
             <br>
 
             <button type="submit">Save Sleep</button>
         </form>
     </main>
+
+    <script>
+        // script written by Claude Code Opus 4.8
+        async function loadSleep(date) {
+            if (!date) return;
+            const res = await fetch(`/sleep-entry?date=${date}`);
+            const entry = await res.json();
+            document.getElementById("sleep_id").value = entry.SleepID || "";
+            if (entry.Duration != null) {
+                const h = Math.floor(entry.Duration / 60);
+                const m = entry.Duration % 60;
+                document.getElementById("sleep_time").value =
+                    h + ":" + String(m).padStart(2, "0");
+            } else {
+                document.getElementById("sleep_time").value = "";
+            }
+        }
+    </script>
 </body>
 </html>

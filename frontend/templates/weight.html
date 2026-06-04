@@ -5,23 +5,38 @@
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
+    <a class="home-btn" href="/">Home</a>
     <main class="container">
         <h1>Log Weight</h1>
 
         <form method="POST" action="/submit-weight">
             <div class="field-row">
-                <input type="date" name="date">
-                <input name="weight" placeholder="weight">
-                <select name="weight_unit">
-                    <option value="lbs">lbs</option>
+                <input type="date" name="date" onchange="loadWeight(this.value)">
+                <input name="weight" id="weight" placeholder="weight">
+                <select name="weight_unit" id="weight_unit">
+                    <option value="lb">lbs</option>
                     <option value="kg">kg</option>
                 </select>
             </div>
+
+            <input type="hidden" name="weight_id" id="weight_id">
 
             <br>
 
             <button type="submit">Save Weight</button>
         </form>
     </main>
+
+    <script>
+        // written by Claude Code Opus 4.8
+        async function loadWeight(date) {
+            if (!date) return;
+            const res = await fetch(`/weight-entry?date=${date}`);
+            const entry = await res.json();
+            document.getElementById("weight").value = entry.Weight || "";
+            document.getElementById("weight_id").value = entry.WeightID || "";
+            if (entry.Unit) document.getElementById("weight_unit").value = entry.Unit;
+        }
+    </script>
 </body>
 </html>

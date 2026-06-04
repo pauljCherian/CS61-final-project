@@ -11,9 +11,14 @@ def get_workout_cardio(current_user_id, current_user_is_admin, workout_id):
     try:
         db = get_db_connection()
         cursor = db.cursor(dictionary=True)
-        query = "SELECT * FROM CardioSessions WHERE UserID = %s AND WorkoutID = %s"
-        values = (current_user_id, workout_id)
-        cursor.execute(query, values)
+
+        check_user_query = "SELECT WorkoutID FROM Workouts WHERE WorkoutID = %s AND UserID = %s"
+        cursor.execute(check_user_query, (workout_id, current_user_id))
+        if len(cursor.fetchall()) == 0:
+            return jsonify({"error": f"Invalid workout ID for this user: {workout_id}"}), 404
+
+        query = "SELECT * FROM CardioSessions WHERE WorkoutID = %s ORDER BY CardioID"
+        cursor.execute(query, (workout_id,))
         rows = cursor.fetchall()
 
         return jsonify(rows), 200
@@ -30,17 +35,20 @@ def get_workout_cardio(current_user_id, current_user_is_admin, workout_id):
 @token_required
 def add_workout_cardio(current_user_id, current_user_is_admin, workout_id):
     try:
-        data = request.get_json() #data provided by client
-        # Basic validation
-        if not data:
-            return jsonify({"error": "No data provided"}), 400 # status 400 = Bad Request
-                
+        data = request.get_json(silent=True) or {}
+
         db = get_db_connection()
-        cursor = db.cursor(prepared=True) 
-        query = ("INSERT INTO CardioSessions (WorkoutID, ActivityType, Duration, Distance, Units, Intensity, AvgHeartRate, Notes) "
-            "VALUES (%s, %s, %s, %s, %s, %s, %s, %s)")
-        values = (workout_id, data["ActivityType"], data['Duration'], data["Distance"],
-                  data["Units"], data["Intensity"], data["AvgHeartRate"], data["Notes"])
+        cursor = db.cursor(prepared=True)
+
+        check_user_query = "SELECT WorkoutID FROM Workouts WHERE WorkoutID = %s AND UserID = %s"
+        cursor.execute(check_user_query, (workout_id, current_user_id))
+        if len(cursor.fetchall()) == 0:
+            return jsonify({"error": f"Invalid workout ID for this user: {workout_id}"}), 404
+
+        query = ("INSERT INTO CardioSessions (WorkoutID, ActivityType, Duration, Distance, Units, Intensity, Notes) "
+            "VALUES (%s, %s, %s, %s, %s, %s, %s)")
+        values = (workout_id, data.get("ActivityType"), data.get("Duration"), data.get("Distance"),
+                  data.get("Units"), data.get("Intensity"), data.get("Notes"))
         cursor.execute(query, values)
         db.commit()
         new_id = cursor.lastrowid
@@ -73,10 +81,10 @@ def update_cardio(current_user_id, current_user_is_admin, id):
         cursor = db.cursor(prepared=True) 
 
         check_user_query = (
-            "SELECT c.CardioID, w.WorkoutID, w.UserID "
+            "SELECT c.CardioID "
             "FROM Workouts w "
             "JOIN CardioSessions c ON c.WorkoutID = w.WorkoutID "
-            "WHERE Workouts.UserID = %s AND CardioSessions.CardioID = %s"
+            "WHERE w.UserID = %s AND c.CardioID = %s"
             )
         
         check_user_values = (current_user_id, id)
@@ -86,7 +94,7 @@ def update_cardio(current_user_id, current_user_is_admin, id):
         if len(rows) == 0:
           return jsonify({"error": f"Couldn't find cardio session for this user with id {id}"}), 400
         
-        allowed_fields = ["ActivityType", "Duration", "Distance", "Units", "Intensity", "AvgHeartRate", "Notes"]
+        allowed_fields = ["ActivityType", "Duration", "Distance", "Units", "Intensity", "Notes"]
         set_clauses = []
         values = []
 
@@ -96,9 +104,8 @@ def update_cardio(current_user_id, current_user_is_admin, id):
                 values.append(data[field])
 
         if set_clauses:
-            query = f"UPDATE CardioSessions SET {', '.join(set_clauses)} WHERE UserID = %s AND CardioID = %s"
-            
-            values.append(current_user_id) 
+            query = f"UPDATE CardioSessions SET {', '.join(set_clauses)} WHERE CardioID = %s"
+
             values.append(id)
             
             cursor.execute(query, tuple(values))
@@ -128,10 +135,10 @@ def delete_cardio(current_user_id, current_user_is_admin, id : int):
         cursor = db.cursor(prepared=True) 
 
         check_user_query = (
-            "SELECT c.CardioID, w.WorkoutID, w.UserID "
+            "SELECT c.CardioID "
             "FROM Workouts w "
             "JOIN CardioSessions c ON c.WorkoutID = w.WorkoutID "
-            "WHERE Workouts.UserID = %s AND CardioSessions.CardioID = %s"
+            "WHERE w.UserID = %s AND c.CardioID = %s"
             )
         
         check_user_values = (current_user_id, id)

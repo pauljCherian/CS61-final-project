@@ -5,8 +5,15 @@
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
+    <a class="home-btn" href="/">Home</a>
         <main class="container" data-workout-id="{{ workout_id }}">
         <h1>Workout</h1>
+
+        <div class="field-row">
+            <input type="date" name="workout_date" value="{{ workout.WorkoutDate }}" onblur="saveWorkout()">
+            <input name="workout_description" placeholder="description" value="{{ workout.Description or '' }}" onblur="saveWorkout()">
+            <input name="workout_notes" placeholder="notes" value="{{ workout.Notes or '' }}" onblur="saveWorkout()">
+        </div>
 
         <div id="lifts">
             {% for lift in lifts %}
@@ -41,7 +48,39 @@
         <hr>
 
         <h2>Cardio</h2>
-        <div id="cardio-sessions"></div>
+        <div id="cardio-sessions">
+            {% for c in cardio %}
+            <div class="cardio" data-cardio-id="{{ c.CardioID }}">
+                <div class="cardio-header">
+                    <input name="cardio_type" placeholder="activity (e.g. Running)" value="{{ c.ActivityType or '' }}" onblur="saveCardio(this)">
+                    <input name="cardio_notes" placeholder="notes (e.g. 4x400m)" value="{{ c.Notes or '' }}" onblur="saveCardio(this)">
+                    <button type="button" onclick="deleteCardio(this)">Delete Cardio</button>
+                </div>
+
+                <div class="cardio-stats">
+                    <input name="cardio_time" placeholder="HH:MM:SS" value="{{ c.Duration or '' }}" onblur="saveCardio(this)">
+                    <input name="cardio_distance" placeholder="distance" value="{{ c.Distance or '' }}" onblur="saveCardio(this)">
+                    <label>Unit
+                        <select name="cardio_unit" onchange="saveCardio(this)">
+                            {% for u in ["mi","km","m"] %}
+                            <option value="{{ u }}" {% if c.Units == u %}selected{% endif %}>{{ u }}</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                    <label>Intensity
+                        <select name="cardio_intensity" onchange="saveCardio(this)">
+                            <option value="">-</option>
+                            {% for i in [1, 2, 3, 4, 5] %}
+                            <option value="{{ i }}" {% if c.Intensity == i %}selected{% endif %}>{{ i }}</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                </div>
+
+                <hr>
+            </div>
+            {% endfor %}
+        </div>
         <button type="button" onclick="addCardio()">Add Cardio</button>
     </main>
 
@@ -73,24 +112,26 @@
     </template>
 
     <template id="cardio-template">
-        <div class="cardio">
+        <div class="cardio" data-cardio-id="">
             <div class="cardio-header">
-                <input name="cardio_type" placeholder="cardio type">
-                <input name="cardio_notes" placeholder="notes (e.g. 4x400m)">
+                <input name="cardio_type" placeholder="activity (e.g. Running)" onblur="saveCardio(this)">
+                <input name="cardio_notes" placeholder="notes (e.g. 4x400m)" onblur="saveCardio(this)">
+                <button type="button" onclick="deleteCardio(this)">Delete Cardio</button>
             </div>
 
             <div class="cardio-stats">
-                <input name="cardio_time" placeholder="time">
-                <input name="cardio_distance" placeholder="distance">
+                <input name="cardio_time" placeholder="HH:MM:SS" onblur="saveCardio(this)">
+                <input name="cardio_distance" placeholder="distance" onblur="saveCardio(this)">
                 <label>Unit
-                    <select name="cardio_unit">
-                        <option value="miles">miles</option>
-                        <option value="meters">meters</option>
-                        <option value="yards">yards</option>
+                    <select name="cardio_unit" onchange="saveCardio(this)">
+                        <option value="mi">mi</option>
+                        <option value="km">km</option>
+                        <option value="m">m</option>
                     </select>
                 </label>
                 <label>Intensity
-                    <select name="cardio_intensity">
+                    <select name="cardio_intensity" onchange="saveCardio(this)">
+                        <option value="">-</option>
                         <option value="1">1</option>
                         <option value="2">2</option>
                         <option value="3">3</option>
@@ -100,14 +141,12 @@
                 </label>
             </div>
 
-            <button type="button">Save Cardio</button>
-
             <hr>
         </div>
     </template>
 
     <script>
-        // Used Claude Code Opus 4.8 to assist in writing the scripts - not comfortable with JS
+        // Used Claude Code Opus 4.8 to write the scripts - not comfortable with JS
         // Which workout these lifts/sets belong to (read from <main data-workout-id>).
         const WORKOUT_ID = document.querySelector(".container").dataset.workoutId;
 
@@ -121,6 +160,16 @@
             const res = await fetch(url, opts);
             if (!res.ok) { console.error(method, url, res.status); return null; }
             return res.status === 204 ? {} : res.json();  // deletes have no body
+        }
+
+        // ---------------- workout (date / description / notes) ----------------
+
+        async function saveWorkout() {
+            await api("PUT", `/workout/${WORKOUT_ID}`, {
+                date: document.querySelector("[name=workout_date]").value,
+                description: document.querySelector("[name=workout_description]").value,
+                notes: document.querySelector("[name=workout_notes]").value,
+            });
         }
 
         // ---------------- lifts ----------------
@@ -205,12 +254,38 @@
             row.remove();
         }
 
-        // ---------------- cardio (no logic yet) ----------------
+        // ---------------- cardio ----------------
 
-        function addCardio() {
-            const template = document.getElementById("cardio-template");
-            const copy = template.content.cloneNode(true);
+        // Creates a blank cardio session on the server first, then draws it with its id.
+        async function addCardio() {
+            const res = await api("POST", `/workout/${WORKOUT_ID}/cardio`);
+            if (!res) return;
+
+            const copy = document.getElementById("cardio-template").content.cloneNode(true);
+            copy.querySelector(".cardio").dataset.cardioId = res.cardio_id;
             document.getElementById("cardio-sessions").appendChild(copy);
+        }
+
+        // Fires on blur/change of any cardio field. Sends the whole session.
+        async function saveCardio(el) {
+            const card = el.closest(".cardio");
+            await api("PUT", `/cardio/${card.dataset.cardioId}`, {
+                type:      card.querySelector("[name=cardio_type]").value || null,
+                notes:     card.querySelector("[name=cardio_notes]").value || null,
+                time:      card.querySelector("[name=cardio_time]").value || null,
+                distance:  card.querySelector("[name=cardio_distance]").value || null,
+                unit:      card.querySelector("[name=cardio_unit]").value || null,
+                intensity: card.querySelector("[name=cardio_intensity]").value || null,
+            });
+        }
+
+        async function deleteCardio(button) {
+            const card = button.closest(".cardio");
+            if (card.dataset.cardioId) {
+                const res = await api("DELETE", `/cardio/${card.dataset.cardioId}`);
+                if (!res) return;
+            }
+            card.remove();
         }
     </script>
 </body>

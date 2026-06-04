@@ -12,8 +12,14 @@ def get_bodyweights(current_user_id, current_user_is_admin):
     try:
         db = get_db_connection()
         cursor = db.cursor(dictionary=True)
-        query = "SELECT * FROM Bodyweight WHERE UserID = %s"
-        values = (current_user_id,)
+
+        date = request.args.get('date')
+        if date:
+            query = "SELECT * FROM Bodyweight WHERE UserID = %s AND RecordedDate = %s"
+            values = (current_user_id, date)
+        else:
+            query = "SELECT * FROM Bodyweight WHERE UserID = %s"
+            values = (current_user_id,)
         cursor.execute(query, values)
         rows = cursor.fetchall()
 

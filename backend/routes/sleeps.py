@@ -11,8 +11,14 @@ def get_sleeps(current_user_id, current_user_is_admin):
     try:
         db = get_db_connection()
         cursor = db.cursor(dictionary=True)
-        query = "SELECT * FROM Sleep WHERE UserID = %s"
-        values = (current_user_id,)
+
+        date = request.args.get('date')
+        if date:
+            query = "SELECT * FROM Sleep WHERE UserID = %s AND SleepDate = %s"
+            values = (current_user_id, date)
+        else:
+            query = "SELECT * FROM Sleep WHERE UserID = %s"
+            values = (current_user_id,)
         cursor.execute(query, values)
         rows = cursor.fetchall()
 

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Workouts</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <a class="home-btn" href="/">Home</a>
+    <span class="clock" id="clock"></span>
+
+    <main class="container">
+        <h1>Workouts</h1>
+
+        <table class="workouts-table">
+            <tr>
+                <th>Date</th>
+                <th>Description</th>
+                <th>Notes</th>
+                <th></th>
+                <th></th>
+            </tr>
+            {% for w in workouts %}
+            <tr>
+                <td>{{ w.WorkoutDate.split(' ')[1:4] | join(' ') }}</td>
+                <td>{{ w.Description }}</td>
+                <td>{{ w.Notes }}</td>
+                <td><a href="/workout/{{ w.WorkoutID }}">View</a></td>
+                <td>
+                    <form action="/delete-workout/{{ w.WorkoutID }}" method="post">
+                        <button type="submit">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </main>
+
+    <!-- Clock written by Claude Code Opus 4.8 -->
+    <script>
+        function tick() {
+            document.getElementById("clock").textContent = new Date().toLocaleTimeString();
+        }
+        tick();
+        setInterval(tick, 1000);
+    </script>
+</body>
+</html>
