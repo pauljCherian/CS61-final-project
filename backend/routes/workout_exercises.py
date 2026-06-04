@@ -5,6 +5,26 @@ from utils import get_db_connection, token_required, admin_required
 # 1. Create the Blueprint
 workout_exercises_bp = Blueprint('workout_exercises', __name__)
 
+
+def get_or_create_exercise(cursor, name):
+    """Return the ExerciseID for `name`, creating the catalog row if it's new.
+
+    Lookup is case-insensitive ("bench press" matches "Bench Press"), so we
+    reuse an existing exercise instead of making a near-duplicate. The first
+    spelling seen is the one stored. Runs on the caller's cursor/transaction.
+    """
+    cursor.execute(
+        "SELECT ExerciseID FROM Exercises WHERE LOWER(ExerciseName) = LOWER(%s)",
+        (name,),
+    )
+    row = cursor.fetchone()
+    if row:
+        return row[0]
+
+    cursor.execute("INSERT INTO Exercises (ExerciseName) VALUES (%s)", (name,))
+    return cursor.lastrowid
+
+
 # Workout exercise relation
 
 @workout_exercises_bp.route('/api/workouts/<int:workout_id>/exercises', methods=["GET"])
@@ -49,17 +69,17 @@ def add_workout_exercise(current_user_id, current_user_is_admin, workout_id):
         db = get_db_connection()
         cursor = db.cursor(prepared=True) 
 
-        check_user_query = "SELECT * FROM Workouts WHERE WorkoutID = %s AND UserID = %s"
-        check_user_values = (workout_id, current_user_id)
-
-        cursor.execute(check_user_query, check_user_values)
-        rows = cursor.fetchall()
-        if len(rows) == 0:
+        check_user_query = "SELECT WorkoutID FROM Workouts WHERE WorkoutID = %s AND UserID = %s"
+        cursor.execute(check_user_query, (workout_id, current_user_id))
+        if len(cursor.fetchall()) == 0:
             return jsonify({"error": f"Invalid workout ID for this user: {workout_id}"}), 404
 
-        query = ("INSERT INTO WorkoutExercise (WorkoutID, ExerciseID, OrderNum) "
-            "VALUES (%s, %s, %s)")
-        values = (current_user_id, workout_id, data['ExerciseID'], data["OrderNum"])
+        # Turn the typed name into an ExerciseID, creating the exercise if new.
+        exercise_id = get_or_create_exercise(cursor, data["ExerciseName"])
+
+        query = ("INSERT INTO WorkoutExercise (WorkoutID, ExerciseID, OrderNum, Notes) "
+            "VALUES (%s, %s, %s, %s)")
+        values = (workout_id, exercise_id, data.get("OrderNum"), data.get("Notes"))
         cursor.execute(query, values)
         db.commit()
         new_id = cursor.lastrowid
@@ -79,6 +99,58 @@ def add_workout_exercise(current_user_id, current_user_is_admin, workout_id):
         if 'db' in locals():
             db.close()
 
+@workout_exercises_bp.route('/api/workout-exercises/<int:id>', methods=["PUT"])
+@token_required
+def update_workout_exercise(current_user_id, current_user_is_admin, id):
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+
+        db = get_db_connection()
+        cursor = db.cursor(prepared=True)
+
+        check_user_query = (
+            "SELECT w.UserID "
+            "FROM Workouts w "
+            "JOIN WorkoutExercise we ON we.WorkoutID = w.WorkoutID "
+            "WHERE we.WorkoutExerciseID = %s AND w.UserID = %s"
+        )
+        cursor.execute(check_user_query, (id, current_user_id))
+        if len(cursor.fetchall()) == 0:
+            return jsonify({"error": f"Invalid workout exercise ID for this user: {id}"}), 404
+
+        set_clauses = []
+        values = []
+
+        # Renaming re-points this lift at a (possibly new) exercise; sets stay put.
+        if "ExerciseName" in data:
+            exercise_id = get_or_create_exercise(cursor, data["ExerciseName"])
+            set_clauses.append("ExerciseID = %s")
+            values.append(exercise_id)
+
+        if "Notes" in data:
+            set_clauses.append("Notes = %s")
+            values.append(data["Notes"])
+
+        if set_clauses:
+            query = f"UPDATE WorkoutExercise SET {', '.join(set_clauses)} WHERE WorkoutExerciseID = %s"
+            values.append(id)
+            cursor.execute(query, tuple(values))
+            db.commit()
+
+        return jsonify({"message": "Workout exercise updated successfully"}), 200
+
+    except Exception as e:
+        print(f"Database error: {e}")
+        return jsonify({"error": "Internal Server Error", "message": str(e)}), 500
+
+    finally:
+        if 'cursor' in locals():
+            cursor.close()
+        if 'db' in locals():
+            db.close()
+
 @workout_exercises_bp.route('/api/workout-exercises/<int:id>', methods=["DELETE"])
 @token_required
 def delete_workout_exercise(current_user_id, current_user_is_admin, id : int):
@@ -88,7 +160,7 @@ def delete_workout_exercise(current_user_id, current_user_is_admin, id : int):
 
         check_user_query = (
             "SELECT w.UserID "
-            "FROM Workouts "
+            "FROM Workouts w "
             "JOIN WorkoutExercise we ON we.WorkoutID = w.WorkoutID "
             "WHERE we.WorkoutExerciseID = %s AND w.UserID = %s"
           )
@@ -99,7 +171,7 @@ def delete_workout_exercise(current_user_id, current_user_is_admin, id : int):
         if len(rows) == 0:
             return jsonify({"error": f"Invalid workout exercise ID for this user: {id}"})
 
-        query = ("DELETE FROM WorkoutExercises WHERE WorkoutExerciseID = %s")
+        query = ("DELETE FROM WorkoutExercise WHERE WorkoutExerciseID = %s")
         values = (id,)
         cursor.execute(query, values)
 
@@ -131,7 +203,7 @@ def get_sets(current_user_id, current_user_is_admin, we_id):
 
         check_user_query = (
             "SELECT w.UserID "
-            "FROM Workouts "
+            "FROM Workouts w "
             "JOIN WorkoutExercise we ON we.WorkoutID = w.WorkoutID "
             "WHERE we.WorkoutExerciseID = %s AND w.UserID = %s"
           )
@@ -171,7 +243,7 @@ def add_set(current_user_id, current_user_is_admin, we_id):
 
         check_user_query = (
             "SELECT w.UserID "
-            "FROM Workouts "
+            "FROM Workouts w "
             "JOIN WorkoutExercise we ON we.WorkoutID = w.WorkoutID "
             "WHERE we.WorkoutExerciseID = %s AND w.UserID = %s"
           )
@@ -218,7 +290,7 @@ def update_set(current_user_id, current_user_is_admin, id):
 
         check_user_query = (
             "SELECT w.UserID "
-            "FROM Workouts "
+            "FROM Workouts w "
             "JOIN WorkoutExercise we ON we.WorkoutID = w.WorkoutID "
             "JOIN WorkoutSets ws ON ws.WorkoutExerciseID = we.WorkoutExerciseID "
             "WHERE ws.SetID = %s AND w.UserID = %s"
@@ -271,7 +343,7 @@ def delete_weight(current_user_id, current_user_is_admin, id : int):
 
         check_user_query = (
             "SELECT w.UserID "
-            "FROM Workouts "
+            "FROM Workouts w "
             "JOIN WorkoutExercise we ON we.WorkoutID = w.WorkoutID "
             "JOIN WorkoutSets ws ON ws.WorkoutExerciseID = we.WorkoutExerciseID "
             "WHERE ws.SetID = %s AND w.UserID = %s"

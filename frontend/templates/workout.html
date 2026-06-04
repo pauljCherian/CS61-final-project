@@ -5,58 +5,43 @@
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-    <main class="container">
+        <main class="container" data-workout-id="{{ workout_id }}">
         <h1>Workout</h1>
 
-        <form method="POST" action="/submit-workout">
+        <div id="lifts"></div>
+        <button type="button" onclick="addLift()">Add Lift</button>
 
-            <div id="lifts"></div>
+        <hr>
 
-            <button type="button" onclick="addLift()">Add Lift</button>
-
-            <hr>
-
-            <h2>Cardio</h2>
-
-            <div id="cardio-sessions"></div>
-
-            <button type="button" onclick="addCardio()">Add Cardio</button>
-
-            <hr>
-
-            <button type="submit">Save Workout</button>
-        </form>
+        <h2>Cardio</h2>
+        <div id="cardio-sessions"></div>
+        <button type="button" onclick="addCardio()">Add Cardio</button>
     </main>
 
     <template id="lift-template">
-        <div class="lift">
+        <div class="lift" data-we-id="">
             <h2>Lift</h2>
 
             <div class="lift-header">
-                <input name="lift_name" placeholder="exercise name">
-                <input name="lift_notes" placeholder="notes (optional)">
+                <input name="lift_name" placeholder="exercise name" onblur="saveLift(this)">
+                <input name="lift_notes" placeholder="notes (optional)" onblur="saveLift(this)">
+                <button type="button" onclick="deleteLift(this)">Delete Lift</button>
             </div>
 
-            <div class="sets">
-                <div class="set">
-                    <input name="weight" placeholder="weight">
-                    <input name="reps" placeholder="reps">
-                    <input name="rpe" placeholder="rpe">
-                </div>
-            </div>
+            <div class="sets"></div>
 
-            <button type="button" onclick="addSet(this)">Add Set</button>
-            <button type="button">Save Sets</button>
+            <button type="button" class="add-set" onclick="addSet(this)" disabled>Add Set</button>
 
             <hr>
         </div>
     </template>
 
     <template id="set-template">
-        <div class="set">
-            <input name="weight" placeholder="weight">
-            <input name="reps" placeholder="reps">
-            <input name="rpe" placeholder="rpe">
+        <div class="set" data-set-id="">
+            <input name="weight" placeholder="weight" onblur="saveSet(this)">
+            <input name="reps" placeholder="reps" onblur="saveSet(this)">
+            <input name="rpe" placeholder="rpe" onblur="saveSet(this)">
+            <button type="button" onclick="deleteSet(this)">x</button>
         </div>
     </template>
 
@@ -95,21 +80,105 @@
     </template>
 
     <script>
+        // Used Claude Code Opus 4.8 to assist in writing the scripts - not comfortable with JS
+        // Which workout these lifts/sets belong to (read from <main data-workout-id>).
+        const WORKOUT_ID = document.querySelector(".container").dataset.workoutId;
+
+        // ---- shared fetch helper: calls our app.py proxy routes (same origin) ----
+        async function api(method, url, body) {
+            const opts = { method, headers: {} };
+            if (body !== undefined) {
+                opts.headers["Content-Type"] = "application/json";
+                opts.body = JSON.stringify(body);
+            }
+            const res = await fetch(url, opts);
+            if (!res.ok) { console.error(method, url, res.status); return null; }
+            return res.status === 204 ? {} : res.json();  // deletes have no body
+        }
+
+        // ---------------- lifts ----------------
+
+        // Just drops a blank lift card on the page. No server call yet:
+        // a lift can't exist until it has an exercise name.
         function addLift() {
             const template = document.getElementById("lift-template");
             const copy = template.content.cloneNode(true);
             document.getElementById("lifts").appendChild(copy);
+
+            // focus the name input of the card we just added
+            const cards = document.querySelectorAll(".lift");
+            cards[cards.length - 1].querySelector("[name=lift_name]").focus();
         }
 
-        function addSet(button) {
-            const lift = button.parentElement;
-            const sets = lift.querySelector(".sets");
+        // Fires on blur of the name OR notes input.
+        // First time (no we-id) -> CREATE. After that -> UPDATE.
+        async function saveLift(input) {
+            const card  = input.closest(".lift");
+            const name  = card.querySelector("[name=lift_name]").value.trim();
+            const notes = card.querySelector("[name=lift_notes]").value.trim();
 
-            const template = document.getElementById("set-template");
-            const copy = template.content.cloneNode(true);
+            if (!name) return;                            // nothing to save without a name
+            if (card.dataset.weId === "pending") return;  // a create is already in flight
 
-            sets.appendChild(copy);
+            if (!card.dataset.weId) {
+                // CREATE
+                card.dataset.weId = "pending";            // guard against a double-create
+                const order = [...document.querySelectorAll(".lift")].indexOf(card) + 1;
+                const res = await api("POST", `/workout/${WORKOUT_ID}/lifts`, { name, notes, order });
+                if (!res) { card.dataset.weId = ""; return; }   // failed: allow a retry
+                card.dataset.weId = res.we_id;            // remember the server id
+                card.querySelector(".add-set").disabled = false;  // sets can attach now
+            } else {
+                // UPDATE
+                await api("PUT", `/lifts/${card.dataset.weId}`, { name, notes });
+            }
         }
+
+        async function deleteLift(button) {
+            const card = button.closest(".lift");
+            if (card.dataset.weId && card.dataset.weId !== "pending") {
+                const res = await api("DELETE", `/lifts/${card.dataset.weId}`);
+                if (!res) return;                         // leave it on screen if delete failed
+            }
+            card.remove();
+        }
+
+        // ---------------- sets ----------------
+
+        // Creates a blank set on the server first, then draws the row with its id.
+        async function addSet(button) {
+            const card    = button.closest(".lift");
+            const setsDiv = card.querySelector(".sets");
+            const setNum  = setsDiv.querySelectorAll(".set").length + 1;
+
+            const res = await api("POST", `/lifts/${card.dataset.weId}/sets`, { set_num: setNum });
+            if (!res) return;
+
+            const copy = document.getElementById("set-template").content.cloneNode(true);
+            copy.querySelector(".set").dataset.setId = res.set_id;  // stamp id before it's on the page
+            setsDiv.appendChild(copy);
+        }
+
+        // Fires on blur of any set field. Sends all three values for that set.
+        async function saveSet(input) {
+            const row = input.closest(".set");
+            await api("PUT", `/sets/${row.dataset.setId}`, {
+                weight: row.querySelector("[name=weight]").value || null,
+                reps:   row.querySelector("[name=reps]").value || null,
+                rpe:    row.querySelector("[name=rpe]").value || null,
+            });
+        }
+
+        async function deleteSet(button) {
+            const row = button.closest(".set");
+            if (row.dataset.setId) {
+                const res = await api("DELETE", `/sets/${row.dataset.setId}`);
+                if (!res) return;
+            }
+            row.remove();
+        }
+
+        // ---------------- cardio (no logic yet) ----------------
 
         function addCardio() {
             const template = document.getElementById("cardio-template");
