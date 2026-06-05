@@ -53,6 +53,7 @@ CREATE TABLE WorkoutExercise (
     WorkoutID         INT NOT NULL,
     ExerciseID        INT NOT NULL,
     OrderNum          INT,            -- sequence within the workout
+    Notes             TEXT,           -- per-exercise notes (plan, cues)
     CONSTRAINT fk_we_workout
         FOREIGN KEY (WorkoutID)  REFERENCES Workouts(WorkoutID)
         ON DELETE CASCADE,
