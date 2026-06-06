@@ -121,13 +121,10 @@ def get_self(current_user_id):
 @token_required
 def update_self(current_user_id):
     try:
-        data = request.get_json() 
-        
+        data = request.get_json()
+
         if not data:
-            return jsonify({"error": "No data provided"}), 400 
-            
-        if 'UserID' not in data:
-            return jsonify({"error": "UserID is required"}), 400
+            return jsonify({"error": "No data provided"}), 400
 
         db = get_db_connection()
         cursor = db.cursor(prepared=True) 
@@ -144,14 +141,14 @@ def update_self(current_user_id):
         if 'Password' in data:
             salt = bcrypt.gensalt()
             hash_password = bcrypt.hashpw(data["Password"].encode('utf-8'), salt)
-            set_clauses.append("HashPassword = %s")
+            set_clauses.append("HashedPassword = %s")
             values.append(hash_password.decode('utf-8'))
 
         if set_clauses:
             query = f"UPDATE Users SET {', '.join(set_clauses)} WHERE UserID = %s"
-            
-            values.append(data['UserID']) 
-            
+
+            values.append(current_user_id)
+
             cursor.execute(query, tuple(values))
             db.commit()
 
