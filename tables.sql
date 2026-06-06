@@ -25,8 +25,6 @@ CREATE TABLE Users (
 CREATE TABLE Exercises (
     ExerciseID   INT AUTO_INCREMENT PRIMARY KEY,
     ExerciseName VARCHAR(150) NOT NULL UNIQUE,
-    MuscleGroup  ENUM('Chest','Back','Shoulders','Biceps','Triceps','Forearms',
-                      'Quads','Hamstrings','Glutes','Calves','Core','Full Body')
 ) ;
 
 -- ---------------------------------------------------------------------------
@@ -127,22 +125,4 @@ CREATE TABLE Sleep (
         FOREIGN KEY (UserID) REFERENCES Users(UserID)
         ON DELETE CASCADE,
     INDEX idx_sleep_user_date (UserID, SleepDate)
-) ;
-
--- ---------------------------------------------------------------------------
--- Supplements (regimen history via ValidFrom/ValidTo)
--- ---------------------------------------------------------------------------
-CREATE TABLE Supplements (
-    SuppID         INT AUTO_INCREMENT PRIMARY KEY,
-    UserID         INT NOT NULL,
-    SupplementName VARCHAR(150) NOT NULL,
-    Dosage         VARCHAR(100),
-    Units          ENUM('g','mg','mcg','mL','IU','capsule','tablet','scoop') NOT NULL DEFAULT 'g',
-    ValidFrom      DATE NOT NULL,
-    ValidTo        DATE,
-    CONSTRAINT fk_supp_user
-        FOREIGN KEY (UserID) REFERENCES Users(UserID)
-        ON DELETE CASCADE,
-    CONSTRAINT chk_supp_dates CHECK (ValidTo IS NULL OR ValidTo >= ValidFrom),
-    INDEX idx_supp_user (UserID)
 ) ;
