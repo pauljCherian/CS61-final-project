@@ -1,0 +1,52 @@
+<!-- Written by Gemini 3.1 Pro -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Health History</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <a class="home-btn" href="/">Home</a>
+    <main class="container">
+        <h1>Health History</h1>
+
+        <h2>Weight History</h2>
+        <table class="workouts-table">
+            <tr>
+                <th>Date</th>
+                <th>Weight</th>
+            </tr>
+            {% for w in weights %}
+            <tr>
+                <td>{{ w.RecordedDate }}</td>
+                <td>{{ w.Weight }} {{ w.Unit }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="2">No weight data logged yet.</td>
+            </tr>
+            {% endfor %}
+        </table>
+
+        <br>
+
+        <h2>Sleep History</h2>
+        <table class="workouts-table">
+            <tr>
+                <th>Date</th>
+                <th>Duration</th>
+            </tr>
+            {% for s in sleeps %}
+            <tr>
+                <td>{{ s.SleepDate }}</td>
+                <td>{{ s.FormattedDuration }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="2">No sleep data logged yet.</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </main>
+</body>
+</html>

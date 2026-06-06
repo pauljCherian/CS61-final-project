@@ -499,3 +499,21 @@ def submit_sleep():
         print("Could not connect to the server. Make sure your Flask app is running!")
 
     return redirect(url_for("sleep"))
+
+@app.route('/history')
+def history():
+    headers = {"Authorization": f"Bearer {token}"}
+    
+    w_resp = requests.get(f"{API_URL}/api/bodyweights", headers=headers)
+    weights = w_resp.json() if w_resp.ok else []
+    
+    s_resp = requests.get(f"{API_URL}/api/sleeps", headers=headers)
+    sleeps = s_resp.json() if s_resp.ok else []
+    
+    for s in sleeps:
+        if s.get("Duration") is not None:
+            h = s["Duration"] // 60
+            m = s["Duration"] % 60
+            s["FormattedDuration"] = f"{h}h {m}m"
+            
+    return render_template("history.html", weights=weights, sleeps=sleeps)
