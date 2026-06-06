@@ -127,3 +127,46 @@ CREATE TABLE Sleep (
         ON DELETE CASCADE,
     INDEX idx_sleep_user_date (UserID, SleepDate)
 ) ;
+-- ---------------------------------------------------------------------------
+-- One generic audit table for all tracked events
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS AuditLog (
+    AuditID    INT AUTO_INCREMENT PRIMARY KEY,
+    TableName  VARCHAR(50)  NOT NULL,                 -- 'Users' or 'Workouts'
+    Action     ENUM('CREATE','DELETE') NOT NULL,
+    RowID      INT          NOT NULL,                 -- the UserID / WorkoutID affected
+    ChangedBy  VARCHAR(128) NOT NULL DEFAULT (CURRENT_USER()),  -- DB user that did it
+    ChangedAt  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_audit_table_action (TableName, Action),
+    INDEX idx_audit_changed_at (ChangedAt)
+);
+
+-- ---------------------------------------------------------------------------
+-- Users: created / deleted
+-- ---------------------------------------------------------------------------
+CREATE TRIGGER trg_users_after_insert
+AFTER INSERT ON Users
+FOR EACH ROW
+INSERT INTO AuditLog (TableName, Action, RowID)
+VALUES ('Users', 'CREATE', NEW.UserID);
+
+CREATE TRIGGER trg_users_after_delete
+AFTER DELETE ON Users
+FOR EACH ROW
+INSERT INTO AuditLog (TableName, Action, RowID, Summary)
+VALUES ('Users', 'DELETE', OLD.UserID);
+
+-- ---------------------------------------------------------------------------
+-- Workouts: created / deleted
+-- ---------------------------------------------------------------------------
+CREATE TRIGGER trg_workouts_after_insert
+AFTER INSERT ON Workouts
+FOR EACH ROW
+INSERT INTO AuditLog (TableName, Action, RowID)
+VALUES ('Workouts', 'CREATE', NEW.WorkoutID);
+
+CREATE TRIGGER trg_workouts_after_delete
+AFTER DELETE ON Workouts
+FOR EACH ROW
+INSERT INTO AuditLog (TableName, Action, RowID, Summary)
+VALUES ('Workouts', 'DELETE', OLD.WorkoutID);
