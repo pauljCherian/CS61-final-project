@@ -7,7 +7,7 @@ Changes from og plan:
 - remove enum from activity type for cardio sessions
 - change intensity to 1-5 scale instead of low moderate high
 - remove average heart rate from cardio sessions
-- exercises are not user-specific. users can enter any exercises they want on the front end
+- exercises are not user-specific. users can enter any exercises they want on the front end. The exercise table is not a fixed catalog, but instead a list of all exercises that user may want to add. 
 
 
 Backend:
