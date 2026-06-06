@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request
 import bcrypt
-from utils import get_db_connection, token_required, admin_required
+from utils import get_db_connection, token_required
 
 # 1. Create the Blueprint
 bodyweights_bp = Blueprint('bodyweights', __name__)
@@ -8,7 +8,7 @@ bodyweights_bp = Blueprint('bodyweights', __name__)
 # 2. Use the blueprint name for the decorators
 @bodyweights_bp.route('/api/bodyweights', methods=["GET"])
 @token_required
-def get_bodyweights(current_user_id, current_user_is_admin):
+def get_bodyweights(current_user_id):
     try:
         db = get_db_connection()
         cursor = db.cursor(dictionary=True)
@@ -35,7 +35,7 @@ def get_bodyweights(current_user_id, current_user_is_admin):
 
 @bodyweights_bp.route('/api/bodyweights', methods=["POST"])
 @token_required
-def add_bodyweight(current_user_id, current_user_is_admin):
+def add_bodyweight(current_user_id):
     try:
         data = request.get_json() #data provided by client
         # Basic validation
@@ -68,7 +68,7 @@ def add_bodyweight(current_user_id, current_user_is_admin):
 
 @bodyweights_bp.route('/api/bodyweights/<int:id>', methods=["PUT"])
 @token_required
-def update_weight(current_user_id, current_user_is_admin, id):
+def update_weight(current_user_id, id):
     try:
         data = request.get_json() #data provided by client
         # Basic validation
@@ -113,7 +113,7 @@ def update_weight(current_user_id, current_user_is_admin, id):
 
 @bodyweights_bp.route('/api/bodyweights/<int:id>', methods=["DELETE"])
 @token_required
-def delete_weight(current_user_id, current_user_is_admin, id : int):
+def delete_weight(current_user_id, id : int):
     try:        
         db = get_db_connection()
         cursor = db.cursor(prepared=True) 

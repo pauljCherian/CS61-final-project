@@ -90,9 +90,7 @@ def login():
     
     payload = {
         "UserID": user["UserID"],
-        # TODO: Add IsAdmin column?
-        # "Admin": user["IsAdmin"]
-        "Admin": False
+        "Admin": bool(user["IsAdmin"])
     }
 
     token = jwt.encode(payload, current_app.config['SECRET_KEY'] or "SECRET_KEY", algorithm="HS256")
@@ -100,7 +98,7 @@ def login():
 
 @users_bp.route('/api/users/me', methods=["GET"])
 @token_required
-def get_self(current_user_id, current_user_is_admin):
+def get_self(current_user_id):
     try:
         db = get_db_connection()
         cursor = db.cursor(dictionary=True)
@@ -121,7 +119,7 @@ def get_self(current_user_id, current_user_is_admin):
 
 @users_bp.route('/api/users/me', methods=["PUT"])
 @token_required
-def update_self(current_user_id, current_user_is_admin):
+def update_self(current_user_id):
     try:
         data = request.get_json() 
         
@@ -167,7 +165,7 @@ def update_self(current_user_id, current_user_is_admin):
 
 @users_bp.route('/api/users/<int:id>', methods=["DELETE"])
 @admin_required
-def delete_user(current_user_id, current_user_is_admin, id : int):
+def delete_user(current_user_id, id : int):
     try:        
         db = get_db_connection()
         cursor = db.cursor(prepared=True) 

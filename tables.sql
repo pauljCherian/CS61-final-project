@@ -16,6 +16,7 @@ CREATE TABLE Users (
     LastName       VARCHAR(100),
     City           VARCHAR(100),
     State          VARCHAR(100),
+    IsAdmin        BOOLEAN      NOT NULL DEFAULT FALSE,
     CreatedAt      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ;
 

@@ -34,11 +34,10 @@ def token_required(f):
             # USE current_app here!
             data = jwt.decode(token, current_app.config.get('SECRET_KEY', "SECRET_KEY"), algorithms=["HS256"])
             current_user_id = data['UserID']
-            current_user_is_admin = data['Admin']
         except Exception as e:
             return jsonify({'error': str(e)}), 401
-        
-        return f(current_user_id, current_user_is_admin, *args, **kwargs)
+
+        return f(current_user_id, *args, **kwargs)
     return decorated
 
 def admin_required(f):
@@ -57,10 +56,10 @@ def admin_required(f):
             return jsonify({'error': 'Token has expired. Please log in again'}), 401
         except jwt.InvalidTokenError:
             return jsonify({'error': 'Token is invalid.'}), 401
-        
+
         if not current_user_is_admin:
             return jsonify({'error': 'Admin access required'}), 403
-        
-        return f(current_user_id, current_user_is_admin, *args, **kwargs)
-    
+
+        return f(current_user_id, *args, **kwargs)
+
     return decorated

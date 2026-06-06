@@ -1,13 +1,13 @@
 from flask import Blueprint, jsonify, request
 import bcrypt
-from utils import get_db_connection, token_required, admin_required
+from utils import get_db_connection, token_required
 
 # 1. Create the Blueprint
 supplements_bp = Blueprint('supplements', __name__)
 
 @supplements_bp.route('/api/supplements', methods=["GET"])
 @token_required
-def get_supplements(current_user_id, current_user_is_admin):
+def get_supplements(current_user_id):
     try:
         db = get_db_connection()
         cursor = db.cursor(dictionary=True)
@@ -28,7 +28,7 @@ def get_supplements(current_user_id, current_user_is_admin):
 
 @supplements_bp.route('/api/supplements', methods=["POST"])
 @token_required
-def add_supplement(current_user_id, current_user_is_admin):
+def add_supplement(current_user_id):
     try:
         data = request.get_json() #data provided by client
         # Basic validation
@@ -61,7 +61,7 @@ def add_supplement(current_user_id, current_user_is_admin):
 
 @supplements_bp.route('/api/supplements/<int:id>', methods=["PUT"])
 @token_required
-def update_supplement(current_user_id, current_user_is_admin, id):
+def update_supplement(current_user_id, id):
     try:
         data = request.get_json() #data provided by client
         # Basic validation
@@ -106,7 +106,7 @@ def update_supplement(current_user_id, current_user_is_admin, id):
 
 @supplements_bp.route('/api/supplements/<int:id>', methods=["DELETE"])
 @token_required
-def delete_supplement(current_user_id, current_user_is_admin, id : int):
+def delete_supplement(current_user_id, id : int):
     try:        
         db = get_db_connection()
         cursor = db.cursor(prepared=True) 

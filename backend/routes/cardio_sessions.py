@@ -1,13 +1,13 @@
 from flask import Blueprint, jsonify, request
 import bcrypt
-from utils import get_db_connection, token_required, admin_required
+from utils import get_db_connection, token_required
 
 # 1. Create the Blueprint
 cardio_sessions_bp = Blueprint('cardio_sessions', __name__)
 
 @cardio_sessions_bp.route('/api/workouts/<int:workout_id>/cardio', methods=["GET"])
 @token_required
-def get_workout_cardio(current_user_id, current_user_is_admin, workout_id):
+def get_workout_cardio(current_user_id, workout_id):
     try:
         db = get_db_connection()
         cursor = db.cursor(dictionary=True)
@@ -33,7 +33,7 @@ def get_workout_cardio(current_user_id, current_user_is_admin, workout_id):
 
 @cardio_sessions_bp.route('/api/workouts/<int:workout_id>/cardio', methods=["POST"])
 @token_required
-def add_workout_cardio(current_user_id, current_user_is_admin, workout_id):
+def add_workout_cardio(current_user_id, workout_id):
     try:
         data = request.get_json(silent=True) or {}
 
@@ -70,7 +70,7 @@ def add_workout_cardio(current_user_id, current_user_is_admin, workout_id):
 
 @cardio_sessions_bp.route('/api/cardio/<int:id>', methods=["PUT"])
 @token_required
-def update_cardio(current_user_id, current_user_is_admin, id):
+def update_cardio(current_user_id, id):
     try:
         data = request.get_json() #data provided by client
         # Basic validation
@@ -128,7 +128,7 @@ def update_cardio(current_user_id, current_user_is_admin, id):
 
 @cardio_sessions_bp.route('/api/cardio/<int:id>', methods=["DELETE"])
 @token_required
-def delete_cardio(current_user_id, current_user_is_admin, id : int):
+def delete_cardio(current_user_id, id : int):
     try:     
 
         db = get_db_connection()
