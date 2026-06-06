@@ -90,9 +90,7 @@ def login():
     
     payload = {
         "UserID": user["UserID"],
-        # TODO: Add IsAdmin column?
-        # "Admin": user["IsAdmin"]
-        "Admin": False
+        "Admin": bool(user["IsAdmin"])
     }
 
     token = jwt.encode(payload, current_app.config['SECRET_KEY'] or "SECRET_KEY", algorithm="HS256")
@@ -100,7 +98,7 @@ def login():
 
 @users_bp.route('/api/users/me', methods=["GET"])
 @token_required
-def get_self(current_user_id, current_user_is_admin):
+def get_self(current_user_id):
     try:
         db = get_db_connection()
         cursor = db.cursor(dictionary=True)
@@ -121,15 +119,12 @@ def get_self(current_user_id, current_user_is_admin):
 
 @users_bp.route('/api/users/me', methods=["PUT"])
 @token_required
-def update_self(current_user_id, current_user_is_admin):
+def update_self(current_user_id):
     try:
-        data = request.get_json() 
-        
+        data = request.get_json()
+
         if not data:
-            return jsonify({"error": "No data provided"}), 400 
-            
-        if 'UserID' not in data:
-            return jsonify({"error": "UserID is required"}), 400
+            return jsonify({"error": "No data provided"}), 400
 
         db = get_db_connection()
         cursor = db.cursor(prepared=True) 
@@ -146,14 +141,14 @@ def update_self(current_user_id, current_user_is_admin):
         if 'Password' in data:
             salt = bcrypt.gensalt()
             hash_password = bcrypt.hashpw(data["Password"].encode('utf-8'), salt)
-            set_clauses.append("HashPassword = %s")
+            set_clauses.append("HashedPassword = %s")
             values.append(hash_password.decode('utf-8'))
 
         if set_clauses:
             query = f"UPDATE Users SET {', '.join(set_clauses)} WHERE UserID = %s"
-            
-            values.append(data['UserID']) 
-            
+
+            values.append(current_user_id)
+
             cursor.execute(query, tuple(values))
             db.commit()
 
@@ -167,7 +162,7 @@ def update_self(current_user_id, current_user_is_admin):
 
 @users_bp.route('/api/users/<int:id>', methods=["DELETE"])
 @admin_required
-def delete_user(current_user_id, current_user_is_admin, id : int):
+def delete_user(current_user_id, id : int):
     try:        
         db = get_db_connection()
         cursor = db.cursor(prepared=True) 

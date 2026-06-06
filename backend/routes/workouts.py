@@ -1,13 +1,13 @@
 from flask import Blueprint, jsonify, request
 import bcrypt
-from utils import get_db_connection, token_required, admin_required
+from utils import get_db_connection, token_required
 
 # 1. Create the Blueprint
 workouts_bp = Blueprint('workouts', __name__)
 
 @workouts_bp.route('/api/workouts', methods=["GET"])
 @token_required
-def get_workouts(current_user_id, current_user_is_admin):
+def get_workouts(current_user_id):
     try:
         db = get_db_connection()
         cursor = db.cursor(dictionary=True)
@@ -28,7 +28,7 @@ def get_workouts(current_user_id, current_user_is_admin):
 
 @workouts_bp.route('/api/workouts/<int:id>', methods=["GET"])
 @token_required
-def get_workout(current_user_id, current_user_is_admin, id):
+def get_workout(current_user_id, id):
     try:
         db = get_db_connection()
         cursor = db.cursor(dictionary=True)
@@ -49,7 +49,7 @@ def get_workout(current_user_id, current_user_is_admin, id):
 
 @workouts_bp.route('/api/workouts', methods=["POST"])
 @token_required
-def add_workout(current_user_id, current_user_is_admin):
+def add_workout(current_user_id):
     try:
         data = request.get_json() #data provided by client
         # Basic validation
@@ -82,7 +82,7 @@ def add_workout(current_user_id, current_user_is_admin):
 
 @workouts_bp.route('/api/workouts/<int:id>', methods=["PUT"])
 @token_required
-def update_workout(current_user_id, current_user_is_admin, id):
+def update_workout(current_user_id, id):
     try:
         data = request.get_json() #data provided by client
         # Basic validation
@@ -127,7 +127,7 @@ def update_workout(current_user_id, current_user_is_admin, id):
 
 @workouts_bp.route('/api/workouts/<int:id>', methods=["DELETE"])
 @token_required
-def delete_workout(current_user_id, current_user_is_admin, id : int):
+def delete_workout(current_user_id, id : int):
     try:        
         db = get_db_connection()
         cursor = db.cursor(prepared=True) 

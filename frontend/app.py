@@ -142,8 +142,7 @@ def create_workout():
         endpoint = "/api/workouts"
         headers = { "Authorization": f"Bearer {token}"}
 
-        # Use the current day in our configured timezone, as an ISO string
-        # ("YYYY-MM-DD") so it can be JSON-serialized.
+        # Use the current day in our configured timezone
         workout_date = datetime.now(TIMEZONE).date().isoformat()
 
         # User edits desc and notes after creating the workout
@@ -334,6 +333,8 @@ def delete_set(set_id):
         print("Could not connect to the server. Make sure your Flask app is running!")
     return jsonify({"error": "request failed"}), 500
 
+# -------- Cardio -------------
+
 # User adds a cardio session
 @app.route('/workout/<int:workout_id>/cardio', methods=["POST"])
 def create_cardio(workout_id):
@@ -447,7 +448,7 @@ def submit_weight():
     return redirect(url_for("weight"))
 
 # ----------- Sleep ------------------
-# Look up the sleep already logged on a date (for prefill)
+# Look up the sleep already logged on a date
 @app.route('/sleep-entry')
 def sleep_entry():
     try:

@@ -1,13 +1,13 @@
 from flask import Blueprint, jsonify, request
 import bcrypt
-from utils import get_db_connection, token_required, admin_required
+from utils import get_db_connection, token_required
 
 # 1. Create the Blueprint
 exercises_bp = Blueprint('exercises', __name__)
 
 @exercises_bp.route('/api/exercises', methods=["GET"])
 @token_required
-def get_exercises(current_user_id, current_user_is_admin):
+def get_exercises(current_user_id):
     try:
         db = get_db_connection()
         cursor = db.cursor(dictionary=True)
@@ -27,7 +27,7 @@ def get_exercises(current_user_id, current_user_is_admin):
 
 @exercises_bp.route('/api/exercises/<int:id>', methods=["GET"])
 @token_required
-def get_exercise(current_user_id, current_user_is_admin, id):
+def get_exercise(current_user_id, id):
     try:
         db = get_db_connection()
         cursor = db.cursor(dictionary=True)
@@ -48,8 +48,8 @@ def get_exercise(current_user_id, current_user_is_admin, id):
 
 # TODO: Do we want users to be able to add their own custom excersise?
 @exercises_bp.route('/api/exercises', methods=["POST"])
-@admin_required
-def add_exercise(current_user_id, current_user_is_admin):
+@token_required
+def add_exercise(current_user_id):
     try:
         data = request.get_json() #data provided by client
         # Basic validation

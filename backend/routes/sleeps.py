@@ -1,13 +1,13 @@
 from flask import Blueprint, jsonify, request
 import bcrypt
-from utils import get_db_connection, token_required, admin_required
+from utils import get_db_connection, token_required
 
 # 1. Create the Blueprint
 sleeps_bp = Blueprint('sleeps', __name__)
 
 @sleeps_bp.route('/api/sleeps', methods=["GET"])
 @token_required
-def get_sleeps(current_user_id, current_user_is_admin):
+def get_sleeps(current_user_id):
     try:
         db = get_db_connection()
         cursor = db.cursor(dictionary=True)
@@ -34,7 +34,7 @@ def get_sleeps(current_user_id, current_user_is_admin):
 
 @sleeps_bp.route('/api/sleeps', methods=["POST"])
 @token_required
-def add_sleep(current_user_id, current_user_is_admin):
+def add_sleep(current_user_id):
     try:
         data = request.get_json() #data provided by client
         # Basic validation
@@ -67,7 +67,7 @@ def add_sleep(current_user_id, current_user_is_admin):
 
 @sleeps_bp.route('/api/sleeps/<int:id>', methods=["PUT"])
 @token_required
-def update_sleep(current_user_id, current_user_is_admin, id):
+def update_sleep(current_user_id, id):
     try:
         data = request.get_json() #data provided by client
         # Basic validation
@@ -112,7 +112,7 @@ def update_sleep(current_user_id, current_user_is_admin, id):
 
 @sleeps_bp.route('/api/sleeps/<int:id>', methods=["DELETE"])
 @token_required
-def delete_sleep(current_user_id, current_user_is_admin, id : int):
+def delete_sleep(current_user_id, id : int):
     try:        
         db = get_db_connection()
         cursor = db.cursor(prepared=True) 
