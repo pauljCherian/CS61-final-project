@@ -25,7 +25,7 @@ CREATE TABLE Users (
 -- ---------------------------------------------------------------------------
 CREATE TABLE Exercises (
     ExerciseID   INT AUTO_INCREMENT PRIMARY KEY,
-    ExerciseName VARCHAR(150) NOT NULL UNIQUE,
+    ExerciseName VARCHAR(150) NOT NULL UNIQUE
 ) ;
 
 -- ---------------------------------------------------------------------------
