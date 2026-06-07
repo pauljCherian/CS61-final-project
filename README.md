@@ -1,7 +1,20 @@
-# Workout log
+# CS61 Final Project - Workout Log
 
-## SUBMISSION DEMO LINK
+## Submission Deliverables
+### Demo Video Link
 [YouTube demo linked here](https://youtu.be/y9ezfZBDVmY)
+
+### Data Dump
+In this directory at `/Dump20260607`
+
+### Frontend and Backend Code
+In this directory `/frontend` (frontend) and `/backend` (backend)
+
+### Project Write-up
+In this directory at `/cs-61-project-write-up.pdf`
+
+### Project Partner Asssesments
+Done via the Google Form
 
 ## Changes from original plan:
 - remove muscle group from Exercises (too much complexity, not that useful)
