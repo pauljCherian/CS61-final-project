@@ -153,7 +153,7 @@ VALUES ('Users', 'CREATE', NEW.UserID);
 CREATE TRIGGER trg_users_after_delete
 AFTER DELETE ON Users
 FOR EACH ROW
-INSERT INTO AuditLog (TableName, Action, RowID, Summary)
+INSERT INTO AuditLog (TableName, Action, RowID)
 VALUES ('Users', 'DELETE', OLD.UserID);
 
 -- ---------------------------------------------------------------------------
@@ -168,5 +168,5 @@ VALUES ('Workouts', 'CREATE', NEW.WorkoutID);
 CREATE TRIGGER trg_workouts_after_delete
 AFTER DELETE ON Workouts
 FOR EACH ROW
-INSERT INTO AuditLog (TableName, Action, RowID, Summary)
+INSERT INTO AuditLog (TableName, Action, RowID)
 VALUES ('Workouts', 'DELETE', OLD.WorkoutID);
