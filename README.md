@@ -32,3 +32,4 @@ Some code in this repo was written by Claude Code Opus 4.8, those sections are d
 - Some JS work in the frontend
 - Some HTML work in the frontend
 - Seed script
+- Creating the data dump and debugging
