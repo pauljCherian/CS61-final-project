@@ -1,6 +1,9 @@
 # Workout log
 
-## Changes from og plan:
+## SUBMISSION DEMO LINK
+[YouTube demo linked here](https://youtu.be/y9ezfZBDVmY)
+
+## Changes from original plan:
 - remove muscle group from Exercises (too much complexity, not that useful)
 - add notes to WorkoutExercises
 - remove all of supplements table
