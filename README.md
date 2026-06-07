@@ -20,6 +20,10 @@
     - would give us good credit i think for this
 
 
+## Database setup
+Load the schema as root because creating the audit triggers requires admin privileges.
+```mysql -u root -p < tables.sql```
+
 ## Seeding
 ```python3 backend/scripts/seed.py```
 
